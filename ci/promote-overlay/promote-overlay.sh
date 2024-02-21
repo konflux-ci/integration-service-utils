@@ -129,8 +129,8 @@ git fetch --all --tags --prune
 git reset --hard HEAD
 git checkout -b "$new_branch" origin/"$base_branch"
 
-RS_SOURCE_OVERLAY_COMMIT=$(yq '.images[0].newTag' < components/integration/${SOURCE_OVERLAY}/kustomization.yaml)
-RS_TARGET_OVERLAY_COMMIT=$(yq '.images[0].newTag' < components/integration/${TARGET_OVERLAY}/kustomization.yaml)
+RS_SOURCE_OVERLAY_COMMIT=$(yq '.images[0].newTag' < components/integration/${SOURCE_OVERLAY}/base/kustomization.yaml)
+RS_TARGET_OVERLAY_COMMIT=$(yq '.images[0].newTag' < components/integration/${TARGET_OVERLAY}/base/kustomization.yaml)
 
 echo ""
 echo 'integration-service source overlay commit -> '"$RS_SOURCE_OVERLAY_COMMIT"
@@ -149,9 +149,9 @@ do
 done
 
 cd ${infraDeploymentDir}
-sed -i "s/$RS_TARGET_OVERLAY_COMMIT/$RS_SOURCE_OVERLAY_COMMIT/g" components/integration/${TARGET_OVERLAY}/kustomization.yaml
+sed -i "s/$RS_TARGET_OVERLAY_COMMIT/$RS_SOURCE_OVERLAY_COMMIT/g" components/integration/${TARGET_OVERLAY}/base/kustomization.yaml
 
-git add components/integration/${TARGET_OVERLAY}/kustomization.yaml
+git add components/integration/${TARGET_OVERLAY}/base/kustomization.yaml
 git commit -m "$commit_message"
 
 git push origin "$new_branch"
