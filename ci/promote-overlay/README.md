@@ -38,11 +38,11 @@ This script helps to automate this promotion. It analyzes the commits between th
 ## Example output
 ```
 ---
-Promoting integration-service staging to production in redhat-appstudio/infra-deployments
+Promoting integration-service staging to production in konflux-ci/infra-deployments
 ---
 
 Sync fork with upstream:
-{ "message": "This branch is not behind the upstream redhat-appstudio:main.", "merge_type": "none", "base_branch": "redhat-appstudio:main" }
+{ "message": "This branch is not behind the upstream konflux-ci:main.", "merge_type": "none", "base_branch": "redhat-appstudio:main" }
 Cloning into 'infra-deployments'...
 remote: Enumerating objects: 22444, done.
 remote: Counting objects: 100% (39/39), done.
@@ -83,6 +83,6 @@ To github.com:hongweiliu17/infra-deployments.git
 
 ==================================
 Pull request created successfully:
-- https://github.com/redhat-appstudio/infra-deployments/pull/2799
+- https://github.com/redhat-appstudio/konflux-ci/pull/2799
 ==================================
 ```

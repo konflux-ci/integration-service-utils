@@ -75,7 +75,7 @@ fi
 UPDATE_BRANCH_NAME="integration-service-${TARGET_OVERLAY}-update-"$(date '+%Y_%m_%d__%H_%M_%S')
 
 # GitHub repository details
-owner="redhat-appstudio"
+owner="konflux-ci"
 repo="infra-deployments"
 
 # Personal access token with appropriate permissions
