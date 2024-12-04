@@ -4,18 +4,20 @@
 
 # arg check
 if [ $# -ne 2 ]; then
-  echo "Usage: $0 source_namespace/source_repo dest_namespace/dest_repo"
+  echo "Usage: $0 [source_image] [destination_image]"
   exit 1
 fi
 
 # extract the registry info
-SOURCE_REPO="$1"
-DESTINATION_REPO="$2"
-SOURCE_REGISTRY=$(echo "$SOURCE_REPO" | awk -F'/' '{print $1}')"
-DESTINATION_REGISTRY=$(echo "$DESTINATION_REPO" | awk -F'/' '{print $1}')"
+SOURCE="$1"
+DESTINATION="$2"
+SOURCE_REGISTRY="$(echo "${SOURCE}" | awk -F'/' '{print $1}')"
+SOURCE_REPO="${SOURCE#$SOURCE_REGISTRY}"
+SOURCE_REPO="${SOURCE_REPO:1}"
+DESTINATION_REGISTRY="$(echo "${DESTINATION}" | awk -F'/' '{print $1}')"
 
 # check that
-if skopeo login --get-login "$SOURCE_REGISTRY" &> /dev/null && skopeo login --get-login "DESTINATION_REGISTRY" &> /dev/null; then
+if skopeo login --get-login "${SOURCE_REGISTRY}" &> /dev/null && skopeo login --get-login "${DESTINATION_REGISTRY}" &> /dev/null; then
     echo "Credentials for both repos authenticated"
   else
     echo "Error authenticating credentials"
@@ -62,5 +64,5 @@ echo "Total tags to copy: ${#TAGS[@]}"
 # copy each tag
 for TAG in "${TAGS[@]}"; do
   echo "Copying tag $TAG..."
-  $SKOPEO_CMD docker://quay.io/${SOURCE_REPO}:${TAG} docker://quay.io/${DEST_REPO}:${TAG}
+  $SKOPEO_CMD docker://"${SOURCE}":"${TAG}" docker://"${DESTINATION}":"${TAG}"
 done
