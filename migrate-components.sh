@@ -106,7 +106,7 @@ migrate_fields() {
     # set spec.lastPromotedImage to spec.containerImage
     PATCH="{\"status\":{\"lastPromotedImage\":${IMAGE}}}"
 
-    /usr/bin/kubectl patch component --dry-run=client $COMPONENT -p "$PATCH" --type merge --subresource status -n $NAMESPACE
+    /usr/bin/kubectl patch component $COMPONENT -p "$PATCH" --type merge --subresource status -n $NAMESPACE
 }
 
 ALL_COMPONENTS=$(kubectl get components  -o custom-columns=Name:.metadata.name,Namespace:.metadata.namespace --all-namespaces --no-headers)
