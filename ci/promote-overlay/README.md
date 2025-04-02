@@ -3,14 +3,14 @@
 
 ## Introduction
 
-The Integration Service in RHTAP is deployed to environments using ArgoCD. The specific content to be deployed to each environment is controlled by overlays.
+The Integration Service in KONFLUX is deployed to environments using ArgoCD. The specific content to be deployed to each environment is controlled by overlays.
 
 There are 3 overlays:
 - development
 - staging
 - production
 
-Currently, when a PR is merged in the integration-service repo, a PR in the infra-deployments repo is created by a RHTAP release pipeline which updates the **development** and **staging** overlay.
+Currently, when a PR is merged in the integration-service repo, a PR in the infra-deployments repo is created by a KONFLUX release pipeline which updates the **development** and **staging** overlay.
 
 Promotion from a lower environment to higher environment is done manually by updating the target overlay.
 
@@ -20,7 +20,7 @@ This script helps to automate this promotion. It analyzes the commits between th
 
 ## Setup
 
-* The script requires an environment variable called _**GITHUB_TOKEN**_ to exist. This token should have the following scopes:
+* The script requires an environment variable called _**GITHUB_TOKEN**_ to exist. This token should have the workflow scope(to be in sync with upstream repo) which by default enables repo scope:
 
 ![Required Github token scopes](github-token-scopes.png)
 
