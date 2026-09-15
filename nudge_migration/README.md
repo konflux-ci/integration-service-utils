@@ -74,7 +74,7 @@ For each namespace, the script:
    - Dangling references (target component does not exist)
    - Duplicate `(from, to)` pairs
 4. **Validates the DAG** — detects cycles using depth-first search
-5. **Checks cardinality** — max 256 nudge entries per NudgeConfig
+5. **Checks cardinality** — max 360 nudge entries per NudgeConfig
 6. **Creates or merges** the NudgeConfig:
    - If `nudge-config` does not exist → creates it
    - If `nudge-config` exists → merges new entries, preserving existing ones
