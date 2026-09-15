@@ -12,7 +12,7 @@ set -euo pipefail
 readonly NUDGE_CONFIG_NAME="nudge-config"
 readonly NUDGE_CONFIG_API_VERSION="appstudio.redhat.com/v1beta2"
 readonly NUDGE_CONFIG_KIND="NudgeConfig"
-readonly MAX_NUDGES=256
+readonly MAX_NUDGES=360
 readonly MAX_RETRIES=3
 
 readonly MIGRATION_LABEL_KEY="nudging.konflux-ci.dev/owner"
