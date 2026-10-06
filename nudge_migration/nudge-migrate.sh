@@ -94,8 +94,15 @@ check_prerequisites() {
   # Capture before matching: piping straight into `grep -q` makes grep exit on
   # first match, and the SIGPIPE that kills kubectl surfaces as exit 141 under
   # `set -o pipefail` — reporting the CRD as missing when it is present.
-  local api_resources
-  api_resources=$(kubectl api-resources --api-group=appstudio.redhat.com 2>/dev/null || true)
+  local api_resources kubectl_err
+  kubectl_err=$(mktemp)
+  if ! api_resources=$(kubectl api-resources --api-group=appstudio.redhat.com 2>"$kubectl_err"); then
+    log_error "Failed to query API resources: $(cat "$kubectl_err")"
+    rm -f "$kubectl_err"
+    exit 1
+  fi
+  rm -f "$kubectl_err"
+
   if ! grep -q nudgeconfig <<<"$api_resources"; then
     log_error "NudgeConfig CRD not found — ensure STONEINTG-1659/1660 is deployed"
     exit 1
