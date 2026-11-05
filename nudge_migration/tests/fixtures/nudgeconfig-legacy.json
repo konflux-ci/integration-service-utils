@@ -1,0 +1,18 @@
+{
+  "apiVersion": "appstudio.redhat.com/v1beta2",
+  "kind": "NudgeConfig",
+  "metadata": {
+    "name": "nudge-config",
+    "namespace": "tenant-a",
+    "resourceVersion": "102",
+    "creationTimestamp": "2025-01-01T00:00:00Z",
+    "labels": {
+      "nudging.konflux-ci.dev/owner": "build-service"
+    }
+  },
+  "spec": {
+    "nudges": [
+      { "from": "comp1", "to": "comp2", "mode": "immediate" }
+    ]
+  }
+}
