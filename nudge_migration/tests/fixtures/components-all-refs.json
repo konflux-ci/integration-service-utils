@@ -1,0 +1,14 @@
+{
+  "apiVersion": "appstudio.redhat.com/v1beta1",
+  "kind": "ComponentList",
+  "items": [
+    {
+      "metadata": { "name": "comp1", "namespace": "tenant-a" },
+      "spec": { "build-nudges-ref": ["comp2"] }
+    },
+    {
+      "metadata": { "name": "comp2", "namespace": "tenant-a" },
+      "spec": { "build-nudges-ref": ["comp1"] }
+    }
+  ]
+}

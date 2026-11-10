@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+#
+# mock-kubectl — stand-in for kubectl used by nudge_migrate tests.
+#
+# Reads fixtures from $MOCK_FIXTURE_DIR, appends every invocation to
+# $MOCK_CALL_LOG (one line per call: "<verb> <subcommand> <rest...>"), and
+# supports the failure knobs listed below.
+#
+# Fixtures (all optional; a missing one behaves like an empty result):
+#   namespaces.txt    space-separated namespace names
+#   components.json   ComponentList
+#   nudgeconfig.json  single NudgeConfig
+#   pipelineruns.json PipelineRunList
+#
+# Environment:
+#   MOCK_FIXTURE_DIR           required
+#   MOCK_CALL_LOG              file receiving the call log (default: /dev/null)
+#   MOCK_NO_CRD=true           api-resources omits nudgeconfigs
+#   MOCK_NC_NOT_FOUND=true     nudgeconfig get returns NotFound
+#   MOCK_DELETE_EXIT=N         nudgeconfig delete exits N
+#   MOCK_ANNOTATE_FAIL_NAMES   comma-separated PLR names whose annotate fails
+#   MOCK_ANNOTATE_NOTFOUND_NAMES  comma-separated PLR names reported as NotFound
+#
+set -uo pipefail
+
+fixture_dir=${MOCK_FIXTURE_DIR:?MOCK_FIXTURE_DIR must be set}
+call_log=${MOCK_CALL_LOG:-/dev/null}
+
+# Drop --context CTX (the script under test routes it through kc()).
+args=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --context) shift 2 ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+set -- ${args[@]+"${args[@]}"}
+
+verb=${1:-}
+sub=${2:-}
+
+if [[ "$call_log" != "/dev/null" ]]; then
+  printf '%s\n' "$*" >> "$call_log"
+fi
+
+fixture() {
+  local name=$1
+  if [[ -f "$fixture_dir/$name" ]]; then
+    cat "$fixture_dir/$name"
+  fi
+}
+
+list_contains() {
+  local csv=$1 needle=$2
+  [[ -n "$csv" ]] || return 1
+  local IFS=','
+  local item
+  for item in $csv; do
+    [[ "$item" == "$needle" ]] && return 0
+  done
+  return 1
+}
+
+case "$verb" in
+  api-resources)
+    if [[ "${MOCK_NO_CRD:-false}" == "true" ]]; then
+      printf 'NAME SHORTNAMES APIVERSION NAMESPACED KIND\n'
+    else
+      printf 'NAME SHORTNAMES APIVERSION NAMESPACED KIND\n'
+      printf 'nudgeconfigs nc appstudio.redhat.com/v1beta2 true NudgeConfig\n'
+    fi
+    ;;
+
+  get)
+    case "$sub" in
+      namespaces)
+        fixture namespaces.txt
+        echo
+        ;;
+      components*)
+        fixture components.json
+        ;;
+      nudgeconfigs*|nudgeconfig)
+        if [[ "${MOCK_NC_NOT_FOUND:-false}" == "true" ]]; then
+          echo 'Error from server (NotFound): nudgeconfigs.appstudio.redhat.com "nudge-config" not found' >&2
+          exit 1
+        fi
+        fixture nudgeconfig.json
+        ;;
+      pipelineruns*|pipelinerun)
+        fixture pipelineruns.json
+        ;;
+      *)
+        echo "mock-kubectl: unsupported get target: $sub" >&2
+        exit 1
+        ;;
+    esac
+    ;;
+
+  create|replace)
+    # Consume stdin so the caller's pipe does not break.
+    out="$fixture_dir/last-written.json"
+    if cat > "$out.tmp"; then
+      mv "$out.tmp" "$out"
+    fi
+    ;;
+
+  delete)
+    if [[ "${MOCK_DELETE_EXIT:-0}" != "0" ]]; then
+      echo "Error from server: timed out waiting for the condition" >&2
+      exit "${MOCK_DELETE_EXIT}"
+    fi
+    ;;
+
+  annotate)
+    # annotate pipelinerun NAME KEY- -n NS
+    plr=${3:-}
+    if list_contains "${MOCK_ANNOTATE_NOTFOUND_NAMES:-}" "$plr"; then
+      echo "Error from server (NotFound): pipelineruns.tekton.dev \"$plr\" not found" >&2
+      exit 1
+    fi
+    if list_contains "${MOCK_ANNOTATE_FAIL_NAMES:-}" "$plr"; then
+      echo "Error from server (Forbidden): pipelineruns.tekton.dev \"$plr\" is forbidden" >&2
+      exit 1
+    fi
+    ;;
+
+  *)
+    echo "mock-kubectl: unsupported verb: $verb" >&2
+    exit 1
+    ;;
+esac
